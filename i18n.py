@@ -1,6 +1,13 @@
 """Textos ES / EN. Agregar un idioma = agregar un diccionario."""
 T = {
     "es": {
+        "g_trend": "Tendencia", "g_context": "Contexto", "faq": "Preguntas frecuentes",
+        "chart_h": "Precio y medias móviles · último año", "close_of": "Cierre del {d} (UTC)",
+        "t_mom": "Momentum 30 días", "t_ma200": "vs media de 200 días", "t_ma50": "vs media de 50 días", "t_ch7": "Cambio 7 días",
+        "t_ath": "Desde el máximo", "t_range": "Rango del último año", "t_vol": "Volatilidad 30 días", "t_volume": "Volumen 24 h (Binance)",
+        "s_vs30": "hace 30 días: ${p}", "s_ma": "media: ${m}", "s_ch7": "hace 7 días: ${p}", "s_ath": "máx. ${p} · {d}",
+        "s_vol": "anualizada · promedio del año {v}%", "s_volume": "{x}% vs promedio 30 días", "pctl": "percentil {p}",
+        "w_up": "positivo", "w_down": "negativo", "w_above": "sobre", "w_below": "bajo",
         "lang_name": "Español", "site": "CriptoNivel", "tagline": "Indicadores simples de criptomonedas, actualizados cada día",
         "home_title": "Indicadores de criptomonedas hoy: momentum, medias móviles y volatilidad",
         "home_desc": "¿Está Bitcoin sobre su media de 200 días? Momentum, distancia al máximo, volatilidad y volumen de las 10 principales criptomonedas, actualizados a diario.",
@@ -46,6 +53,13 @@ T = {
         "ath_note": "Máximo calculado con datos de Binance (desde {first}).",
     },
     "en": {
+        "g_trend": "Trend", "g_context": "Context", "faq": "Frequently asked questions",
+        "chart_h": "Price and moving averages · last year", "close_of": "Close of {d} (UTC)",
+        "t_mom": "30-day momentum", "t_ma200": "vs 200-day average", "t_ma50": "vs 50-day average", "t_ch7": "7-day change",
+        "t_ath": "From all-time high", "t_range": "Last-year range", "t_vol": "30-day volatility", "t_volume": "24 h volume (Binance)",
+        "s_vs30": "30 days ago: ${p}", "s_ma": "average: ${m}", "s_ch7": "7 days ago: ${p}", "s_ath": "high ${p} · {d}",
+        "s_vol": "annualized · 1-year average {v}%", "s_volume": "{x}% vs 30-day average", "pctl": "{p} percentile",
+        "w_up": "positive", "w_down": "negative", "w_above": "above", "w_below": "below",
         "lang_name": "English", "site": "CryptoLevel", "tagline": "Simple crypto indicators, updated every day",
         "home_title": "Crypto indicators today: momentum, moving averages and volatility",
         "home_desc": "Is Bitcoin above its 200-day moving average? Momentum, distance from all-time high, volatility and volume for the top 10 cryptocurrencies, updated daily.",
@@ -65,7 +79,7 @@ T = {
         "a_ath": "The recorded high was <b>${ath}</b> on {ath_date}. Today it is <b>{dd}%</b> below, {days} days later.",
         "a_ath_now": "{name} is at its all-time high today (${ath})!",
         "q_pct": "Is the price high or low compared with the last year?",
-        "a_pct": "It is at the <b>{pct}th percentile</b> of the last year: higher than {pct}% of the last 365 daily closes. 1-year range: ${lo} – ${hi}.",
+        "a_pct": "It is at the <b>{pct} percentile</b> of the last year: higher than {pct}% of the last 365 daily closes. 1-year range: ${lo} – ${hi}.",
         "q_vol": "How volatile is {name}?",
         "a_vol": "Volatility over the last 30 days is <b>{vol}% annualized</b>, {volcmp} its 1-year average ({vol1y}%).",
         "vol_higher": "higher than", "vol_lower": "lower than", "vol_similar": "similar to",

@@ -46,7 +46,7 @@ document.getElementById("calc").addEventListener("submit", async e => {
   document.getElementById("o-inv").textContent = `${sign}${nf(inv, dec)} (${days.length} × ${sign}${nf(amt, dec)})`;
   document.getElementById("o-val").textContent = `${sign}${nf(val, dec)}`;
   const r = (val / inv - 1) * 100, el = document.getElementById("o-ret");
-  el.textContent = `${r > 0 ? "+" : ""}${nf(r, 1)}%  (${sign}${nf(val - inv, dec)})`; el.className = r >= 0 ? "up" : "down";
+  el.textContent = `${r > 0 ? "+" : ""}${nf(r, 1)}%  (${sign}${nf(val - inv, dec)})`; el.textContent = (r >= 0 ? "▲ " : "▼ ") + el.textContent;
   document.getElementById("o-units").textContent = `${nf(units, units < 1 ? 6 : 2)} ${sym}`;
   document.getElementById("out").hidden = false;
 });

@@ -1,30 +1,110 @@
 {% extends "base.html" %}
-{% block content %}
-<h1>{{ title }}</h1>
-<p class="price">${{ fnum(x.price) }} <span class="{{ 'up' if x.ch24 > 0 else 'down' }}">{{ fpct(x.ch24) }}% {{ t.ch24 }}</span></p>
-<div class="cards">
-  <article class="card"><h2>{{ t.q_ma200.format(name=x.name) }}</h2>
-    <p>{{ t.a_ma200.format(yesno=t.yes if x.vs_ma200 > 0 else t.no, name=x.name, price=fnum(x.price), pct_abs=fnum(x.vs_ma200|abs, 1), dir=t.above if x.vs_ma200 > 0 else t.below, ma200=fnum(x.ma200)) }}</p></article>
-  <article class="card"><h2>{{ t.q_ma50 }}</h2>
-    <p>{{ t.a_ma50.format(yesno=t.yes if x.vs_ma50 > 0 else t.no, pct_abs=fnum(x.vs_ma50|abs, 1), dir=t.above if x.vs_ma50 > 0 else t.below, ma50=fnum(x.ma50)) }}</p></article>
-  <article class="card"><h2>{{ t.q_mom.format(name=x.name) }}</h2>
-    <p>{{ t.a_mom.format(mom_word=(t.positive if x.mom_pos else t.negative)|capitalize, ch30=fpct(x.ch30), p30=fnum(x.p30), d30=fdate(x.d30)) }}</p></article>
-  <article class="card"><h2>{{ t.q_ath.format(name=x.name) }}</h2>
-    <p>{% if x.days_ath == 0 %}{{ t.a_ath_now.format(name=x.name, ath=fnum(x.ath)) }}{% else %}{{ t.a_ath.format(ath=fnum(x.ath), ath_date=fdate(x.ath_date), dd=fnum(x.dd|abs, 1), days=fnum(x.days_ath, 0)) }}{% endif %}
-    <br><span class="muted small">{{ t.ath_note.format(first=fdate(x.first)) }}</span></p></article>
-  <article class="card"><h2>{{ t.q_pct }}</h2>
-    <p>{{ t.a_pct.format(pct=x.pct1y, lo=fnum(x.lo1y), hi=fnum(x.hi1y)) }}</p></article>
-  <article class="card"><h2>{{ t.q_vol.format(name=x.name) }}</h2>
-    <p>{{ t.a_vol.format(vol=fnum(x.vol30, 0), volcmp=t.vol_similar if (x.vol30 / x.vol1y - 1)|abs < 0.05 else (t.vol_higher if x.vol30 > x.vol1y else t.vol_lower), vol1y=fnum(x.vol1y, 0)) }}</p></article>
-  <article class="card"><h2>{{ t.q_volume.format(name=x.name) }}</h2>
-    {%- set r = (x.v1 / x.v30 - 1) * 100 -%}
-    <p>{{ t.a_volume.format(v1=fbig(x.v1), vcmp=(t.vol_above if r > 0 else t.vol_below).format(x=fnum(r|abs, 0)), v30=fbig(x.v30)) }}</p></article>
+{%- macro dirv(v) -%}<span class="dir {{ 'good' if v > 0 else 'bad' }}" aria-hidden="true">{{ '▲' if v > 0 else '▼' }}</span>{%- endmacro -%}
+{%- macro tile(label, value, v=None, word=None, sub=None) -%}
+<div class="tile">
+  <div class="t-label">{{ label }}</div>
+  <div class="t-value">{{ value }}</div>
+  <div class="t-sub">{% if v is not none %}{{ dirv(v) }} {% endif %}{% if word %}<span class="t-word">{{ word }}</span>{% if sub %} · {% endif %}{% endif %}{{ sub or '' }}</div>
 </div>
-<h2>{{ t.chart_title.format(name=x.name) }}</h2>
-{{ chart }}
-<section class="explain">
-<h2>{{ t.what_mom }}</h2><p>{{ t.what_mom_txt }}</p>
-<h2>{{ t.what_ma }}</h2><p>{{ t.what_ma_txt }}</p>
+{%- endmacro -%}
+{% block content %}
+{%- set r_vol = (x.v1 / x.v30 - 1) * 100 -%}
+{%- set pos = ((x.price - x.lo1y) / (x.hi1y - x.lo1y) * 100) if x.hi1y > x.lo1y else 50 -%}
+<header class="coin-head">
+  <div>
+    <h1>{{ x.name }} <span class="sym">{{ x.sym }}</span></h1>
+    <p class="muted small">{{ t.close_of.format(d=asof) }}</p>
+  </div>
+  <div class="coin-price">
+    <div class="big">${{ fnum(x.price) }}</div>
+    <div class="small">{{ dirv(x.ch24) }} {{ fpct(x.ch24) }}% {{ t.ch24 }}</div>
+  </div>
+</header>
+
+<section class="panel">
+  <h2 class="panel-h">{{ t.chart_h }}</h2>
+  <div class="legend">
+    <span><i class="key s1"></i>{{ 'Precio' if lang == 'es' else 'Price' }}</span>
+    <span><i class="key s2"></i>{{ 'Media 50d' if lang == 'es' else '50d MA' }}</span>
+    <span><i class="key s3"></i>{{ 'Media 200d' if lang == 'es' else '200d MA' }}</span>
+  </div>
+  <div class="chart-wrap">{{ chart }}<div class="tip" hidden></div></div>
 </section>
-<p class="others">{% for c in coins if c.sym != x.sym %}<a href="/{{ lang }}/{{ c.slug }}/">{{ c.name }}</a>{% endfor %}</p>
+
+<h2 class="group-h">{{ t.g_trend }}</h2>
+<div class="tiles">
+  {{ tile(t.t_mom, fpct(x.ch30) ~ '%', x.ch30, t.w_up if x.mom_pos else t.w_down, t.s_vs30.format(p=fnum(x.p30))) }}
+  {{ tile(t.t_ma200, fpct(x.vs_ma200) ~ '%', x.vs_ma200, t.w_above if x.vs_ma200 > 0 else t.w_below, t.s_ma.format(m=fnum(x.ma200))) }}
+  {{ tile(t.t_ma50, fpct(x.vs_ma50) ~ '%', x.vs_ma50, t.w_above if x.vs_ma50 > 0 else t.w_below, t.s_ma.format(m=fnum(x.ma50))) }}
+  {{ tile(t.t_ch7, fpct(x.ch7) ~ '%', x.ch7, None, t.s_ch7.format(p=fnum(x.price / (1 + x.ch7 / 100)))) }}
+</div>
+
+<h2 class="group-h">{{ t.g_context }}</h2>
+<div class="tiles">
+  {{ tile(t.t_ath, fpct(x.dd) ~ '%', None, None, t.s_ath.format(p=fnum(x.ath), d=fdate(x.ath_date))) }}
+  <div class="tile">
+    <div class="t-label">{{ t.t_range }}</div>
+    <div class="t-value">{{ t.pctl.format(p=ordinal(x.pct1y)) }}</div>
+    <div class="range" role="img" aria-label="{{ t.pctl.format(p=ordinal(x.pct1y)) }}: ${{ fnum(x.lo1y) }} – ${{ fnum(x.hi1y) }}">
+      <div class="track"><div class="fill" style="width:{{ '%.1f' % pos }}%"></div><div class="marker" style="left:{{ '%.1f' % pos }}%"></div></div>
+      <div class="ends"><span>${{ fnum(x.lo1y) }}</span><span>${{ fnum(x.hi1y) }}</span></div>
+    </div>
+  </div>
+  {{ tile(t.t_vol, fnum(x.vol30, 0) ~ '%', None, None, t.s_vol.format(v=fnum(x.vol1y, 0))) }}
+  {{ tile(t.t_volume, '$' ~ fbig(x.v1), r_vol, None, t.s_volume.format(x=('+' if r_vol > 0 else '') ~ fnum(r_vol, 0))) }}
+</div>
+
+<section class="faq">
+  <h2 class="group-h">{{ t.faq }}</h2>
+  <details open><summary>{{ t.q_ma200.format(name=x.name) }}</summary>
+    <p>{{ t.a_ma200.format(yesno=t.yes if x.vs_ma200 > 0 else t.no, name=x.name, price=fnum(x.price), pct_abs=fnum(x.vs_ma200|abs, 1), dir=t.above if x.vs_ma200 > 0 else t.below, ma200=fnum(x.ma200)) }}</p></details>
+  <details><summary>{{ t.q_ma50 }}</summary>
+    <p>{{ t.a_ma50.format(yesno=t.yes if x.vs_ma50 > 0 else t.no, pct_abs=fnum(x.vs_ma50|abs, 1), dir=t.above if x.vs_ma50 > 0 else t.below, ma50=fnum(x.ma50)) }}</p></details>
+  <details><summary>{{ t.q_mom.format(name=x.name) }}</summary>
+    <p>{{ t.a_mom.format(mom_word=(t.positive if x.mom_pos else t.negative)|capitalize, ch30=fpct(x.ch30), p30=fnum(x.p30), d30=fdate(x.d30)) }} {{ t.what_mom_txt }}</p></details>
+  <details><summary>{{ t.q_ath.format(name=x.name) }}</summary>
+    <p>{% if x.days_ath == 0 %}{{ t.a_ath_now.format(name=x.name, ath=fnum(x.ath)) }}{% else %}{{ t.a_ath.format(ath=fnum(x.ath), ath_date=fdate(x.ath_date), dd=fnum(x.dd|abs, 1), days=fnum(x.days_ath, 0)) }}{% endif %}
+    <span class="muted">{{ t.ath_note.format(first=fdate(x.first)) }}</span></p></details>
+  <details><summary>{{ t.q_pct }}</summary>
+    <p>{{ t.a_pct.format(pct=ordinal(x.pct1y), lo=fnum(x.lo1y), hi=fnum(x.hi1y)) }}</p></details>
+  <details><summary>{{ t.q_vol.format(name=x.name) }}</summary>
+    <p>{{ t.a_vol.format(vol=fnum(x.vol30, 0), volcmp=t.vol_similar if (x.vol30 / x.vol1y - 1)|abs < 0.05 else (t.vol_higher if x.vol30 > x.vol1y else t.vol_lower), vol1y=fnum(x.vol1y, 0)) }}</p></details>
+  <details><summary>{{ t.q_volume.format(name=x.name) }}</summary>
+    <p>{{ t.a_volume.format(v1=fbig(x.v1), vcmp=(t.vol_above if r_vol > 0 else t.vol_below).format(x=fnum(r_vol|abs, 0)), v30=fbig(x.v30)) }}</p></details>
+  <details><summary>{{ t.what_ma }}</summary><p>{{ t.what_ma_txt }}</p></details>
+</section>
+
+<nav class="others" aria-label="{{ t.all_coins }}">{% for c in coins if c.sym != x.sym %}<a href="/{{ lang }}/{{ c.slug }}/">{{ c.name }}</a>{% endfor %}</nav>
+
+<script>
+(() => {
+  const tip = document.querySelector(".tip");
+  document.querySelectorAll("svg.chart").forEach(svg => {
+  const S = JSON.parse(svg.dataset.series), xh = svg.querySelector(".xhair"), n = S.d.length;
+  const loc = "{{ 'es-CL' if lang == 'es' else 'en-US' }}";
+  const fmt = v => v.toLocaleString(loc, {maximumFractionDigits: v >= 1000 ? 0 : v >= 1 ? 2 : 4});
+  function show(ev) {
+    const pt = svg.getBoundingClientRect(), vb = svg.viewBox.baseVal;
+    const x = (ev.clientX - pt.left) * vb.width / pt.width;
+    const i = Math.max(0, Math.min(n - 1, Math.round((x - S.x0) / (S.x1 - S.x0) * (n - 1))));
+    const X = S.x0 + i * (S.x1 - S.x0) / (n - 1);
+    xh.setAttribute("x1", X); xh.setAttribute("x2", X); xh.setAttribute("visibility", "visible");
+    tip.replaceChildren();
+    const h = document.createElement("div"); h.className = "tip-d"; h.textContent = S.d[i]; tip.append(h);
+    S.s.forEach((s, k) => {
+      const row = document.createElement("div"); row.className = "tip-r";
+      const key = document.createElement("i"); key.className = "key s" + (k + 1);
+      const v = document.createElement("b"); v.textContent = "$" + fmt(s[i]);
+      const l = document.createElement("span"); l.textContent = S.n[k];
+      row.append(key, v, l); tip.append(row);
+    });
+    tip.hidden = false;
+    const px = X * pt.width / vb.width;
+    tip.style.left = Math.min(px + 12, pt.width - tip.offsetWidth - 4) + "px";
+  }
+  svg.addEventListener("pointermove", show);
+  svg.addEventListener("pointerleave", () => { tip.hidden = true; xh.setAttribute("visibility", "hidden"); });
+  });
+})();
+</script>
 {% endblock %}

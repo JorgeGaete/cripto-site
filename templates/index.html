@@ -12,11 +12,11 @@
 <tr>
 <td><a href="/{{ lang }}/{{ x.slug }}/"><b>{{ x.name }}</b> <span class="muted">{{ x.sym }}</span></a></td>
 <td class="n">${{ fnum(x.price) }}</td>
-<td class="n {{ 'up' if x.ch24 > 0 else 'down' }}">{{ fpct(x.ch24) }}%</td>
-<td class="n {{ 'up' if x.ch7 > 0 else 'down' }}">{{ fpct(x.ch7) }}%</td>
-<td class="n {{ 'up' if x.ch30 > 0 else 'down' }}">{{ fpct(x.ch30) }}%</td>
-<td><span class="pill {{ 'up' if x.mom_pos else 'down' }}">{{ t.positive if x.mom_pos else t.negative }}</span></td>
-<td class="n {{ 'up' if x.vs_ma200 > 0 else 'down' }}">{{ fpct(x.vs_ma200) }}%</td>
+<td class="n"><span class="dir {{ 'good' if x.ch24 > 0 else 'bad' }}">{{ '▲' if x.ch24 > 0 else '▼' }}</span> {{ fpct(x.ch24) }}%</td>
+<td class="n"><span class="dir {{ 'good' if x.ch7 > 0 else 'bad' }}">{{ '▲' if x.ch7 > 0 else '▼' }}</span> {{ fpct(x.ch7) }}%</td>
+<td class="n"><span class="dir {{ 'good' if x.ch30 > 0 else 'bad' }}">{{ '▲' if x.ch30 > 0 else '▼' }}</span> {{ fpct(x.ch30) }}%</td>
+<td><span class="dir {{ 'good' if x.mom_pos else 'bad' }}">{{ '▲' if x.mom_pos else '▼' }}</span> {{ t.positive if x.mom_pos else t.negative }}</td>
+<td class="n"><span class="dir {{ 'good' if x.vs_ma200 > 0 else 'bad' }}">{{ '▲' if x.vs_ma200 > 0 else '▼' }}</span> {{ fpct(x.vs_ma200) }}%</td>
 <td class="n">{{ fpct(x.dd) }}%</td>
 <td class="n">{{ x.pct1y }}</td>
 </tr>

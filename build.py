@@ -118,29 +118,47 @@ def fpct(x, lang, sign=True):
     return (("+" if x > 0 and sign else "") + fnum(x, lang, 1))
 
 
+def ordinal(n, lang):
+    if lang != "en": return str(n)
+    return f"{n}{'th' if 10 <= n % 100 <= 20 else {1: 'st', 2: 'nd', 3: 'rd'}.get(n % 10, 'th')}"
+
+
 def fdate(s, lang):
     y, m, d = map(int, s.split("-"))
     return f"{d} {MONTHS['es'][m - 1]} {y}" if lang == "es" else f"{MONTHS['en'][m - 1]} {d}, {y}"
 
 
-def svg_chart(rows, lang):
-    """Gráfico SVG simple (sin JS): precio, media 50 y media 200 del último año."""
-    W, H, P, L = 720, 260, 30, 64
+def svg_chart(rows, lang, compact=False):
+    """Gráfico SVG (sin librerías): precio, media 50 y media 200 del último año, con etiquetas directas al final.
+    El crosshair/tooltip lo agrega el JS de la página leyendo data-series."""
+    W, H, T, B, L, R = (380, 260, 12, 26, 52, 10) if compact else (760, 300, 16, 28, 58, 96)
     vals = [x for r in rows for x in r[1:]]
     lo, hi = min(vals), max(vals)
-    sx = lambda i: L + i * (W - L - P) / (len(rows) - 1)
-    sy = lambda y: H - P - (y - lo) / (hi - lo) * (H - 2 * P)
+    pad = (hi - lo) * 0.04; lo, hi = lo - pad, hi + pad
+    sx = lambda i: L + i * (W - L - R) / (len(rows) - 1)
+    sy = lambda y: T + (hi - y) / (hi - lo) * (H - T - B)
     path = lambda k: "M" + " L".join(f"{sx(i):.1f},{sy(r[k]):.1f}" for i, r in enumerate(rows))
-    ticks = "".join(f'<text x="{L - 6}" y="{sy(y) + 4:.1f}" text-anchor="end">{fnum(y, lang)}</text>'
-                    f'<line x1="{L}" x2="{W - P}" y1="{sy(y):.1f}" y2="{sy(y):.1f}" class="grid"/>'
-                    for y in (lo, (lo + hi) / 2, hi))
-    months = "".join(f'<text x="{sx(i):.1f}" y="{H - 10}" text-anchor="middle">{MONTHS[lang][int(r[0][5:7]) - 1]}</text>'
-                     for i, r in enumerate(rows) if r[0][8:] == "01")
-    leg = {"es": ("Precio", "Media 50d", "Media 200d"), "en": ("Price", "50d MA", "200d MA")}[lang]
-    return (f'<svg viewBox="0 0 {W} {H}" class="chart" role="img">{ticks}{months}'
-            f'<path d="{path(3)}" class="ma200"/><path d="{path(2)}" class="ma50"/><path d="{path(1)}" class="px"/>'
-            f'<g class="legend"><text x="{L}" y="16" class="px-t">— {leg[0]}</text>'
-            f'<text x="{L + 90}" y="16" class="ma50-t">— {leg[1]}</text><text x="{L + 200}" y="16" class="ma200-t">— {leg[2]}</text></g></svg>')
+    nt = 3 if compact else 4; step = (hi - lo) / nt
+    grid = "".join(f'<line x1="{L}" x2="{W - R}" y1="{sy(lo + j * step):.1f}" y2="{sy(lo + j * step):.1f}" class="grid"/>'
+                   f'<text x="{L - 8}" y="{sy(lo + j * step) + 4:.1f}" text-anchor="end" class="tick">{fnum(lo + j * step, lang)}</text>'
+                   for j in range(nt + 1))
+    months = "".join(f'<text x="{sx(i):.1f}" y="{H - 8}" text-anchor="middle" class="tick">{MONTHS[lang][int(r[0][5:7]) - 1]}</text>'
+                     for i, r in enumerate(rows) if r[0][8:] == "01" and (not compact or int(r[0][5:7]) % 2 == 1))
+    names = {"es": ("Precio", "Media 50d", "Media 200d"), "en": ("Price", "50d MA", "200d MA")}[lang]
+    # etiquetas directas al final de cada línea, separadas si chocan
+    ends = sorted([(sy(rows[-1][k]), k) for k in (1, 2, 3)])
+    ys = [e[0] for e in ends]
+    for i in range(1, 3):
+        if ys[i] - ys[i - 1] < 14: ys[i] = ys[i - 1] + 14
+    labels = "" if compact else "".join(f'<text x="{W - R + 8}" y="{y + 4:.1f}" class="end s{k}">{names[k - 1]}</text>'
+                                        for y, (_, k) in zip(ys, ends))
+    data = json.dumps({"x0": L, "x1": W - R, "lo": lo, "hi": hi, "T": T, "B": B, "H": H,
+                       "d": [r[0] for r in rows], "s": [[round(r[k], 6) for r in rows] for k in (1, 2, 3)],
+                       "n": names}, separators=(",", ":"))
+    return (f'<svg viewBox="0 0 {W} {H}" class="chart {"compact" if compact else "wide"}" role="img" aria-label="{names[0]}, {names[1]}, {names[2]}" '
+            f"data-series='{data}'>{grid}{months}"
+            f'<path d="{path(3)}" class="line s3"/><path d="{path(2)}" class="line s2"/><path d="{path(1)}" class="line s1"/>'
+            f'{labels}<line class="xhair" x1="0" x2="0" y1="{T}" y2="{H - B}" visibility="hidden"/></svg>')
 
 
 # ---------------------------------------------------------------- build
@@ -168,7 +186,7 @@ def main():
         other = "en" if lang == "es" else "es"
         ctx = dict(t=t, lang=lang, other=other, asof=fdate(asof, lang), year=asof[:4],
                    fnum=lambda x, d=None: fnum(x, lang, d), fpct=lambda x, s=True: fpct(x, lang, s),
-                   fbig=lambda x: fbig(x, lang), fdate=lambda s: fdate(s, lang), coins=list(data.values()))
+                   fbig=lambda x: fbig(x, lang), ordinal=lambda n: ordinal(n, lang), fdate=lambda s: fdate(s, lang), coins=list(data.values()))
 
         def render(tpl, path, **kw):
             out = OUT / lang / path; out.parent.mkdir(parents=True, exist_ok=True)
@@ -182,7 +200,7 @@ def main():
             fill = dict(name=x["name"], sym=x["sym"], price=fnum(x["price"], lang), ma200=fnum(x["ma200"], lang),
                         ma50=fnum(x["ma50"], lang), pct_abs=fnum(abs(x["vs_ma200"]), lang, 1), dir=dir_,
                         mom=t["positive"] if x["mom_pos"] else t["negative"])
-            render("coin.html", f"{x['slug']}/index.html", x=x, fill=fill, chart=svg_chart(x["chart"], lang),
+            render("coin.html", f"{x['slug']}/index.html", x=x, fill=fill, chart=svg_chart(x["chart"], lang) + svg_chart(x["chart"], lang, True),
                    title=t["coin_title"].format(**fill), desc=t["coin_desc"].format(**fill))
     # raíz: redirige según idioma del navegador
     (OUT / "index.html").write_text(env.get_template("root.html").render())
