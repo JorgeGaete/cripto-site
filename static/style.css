@@ -86,3 +86,6 @@ footer{max-width:1000px;margin:30px auto 0;padding:16px;border-top:1px solid var
 .chart.compact{display:none}
 @media (max-width:620px){.chart.wide{display:none}.chart.compact{display:block}.t-value{font-size:1.3rem;white-space:normal}
   .coin-price .big{font-size:1.7rem}}
+.ad{margin:14px 0;text-align:center}.ad-l{display:block;font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px}
+.ad iframe{border:0;padding:0;width:100%;max-width:728px;height:90px;overflow:hidden;display:block;margin:0 auto;background:transparent}
+@media (max-width:620px){.ad iframe{height:100px}}

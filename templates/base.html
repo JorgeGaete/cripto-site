@@ -1,3 +1,9 @@
+{%- macro ad(unit) -%}
+{%- if unit -%}
+<aside class="ad" aria-label="{{ t.ad }}"><span class="ad-l">{{ t.ad }}</span>
+<iframe data-aa="{{ unit }}" src="https://acceptable.a-ads.com/{{ unit }}/?size=Adaptive" title="{{ t.ad }}" loading="lazy"></iframe></aside>
+{%- else -%}<div class="ad-slot" aria-label="{{ t.ad }}">{{ t.ad }}</div>{%- endif -%}
+{%- endmacro -%}
 {%- set alt = path.replace('calculadora/', 'calculator/') if lang == 'es' else path.replace('calculator/', 'calculadora/') -%}
 <!doctype html>
 <html lang="{{ lang }}">
@@ -20,9 +26,9 @@
   </nav>
 </header>
 <main>
-<div class="ad-slot" aria-label="{{ t.ad }}">{{ t.ad }}</div>
+{{ ad(ads[0]) }}
 {% block content %}{% endblock %}
-<div class="ad-slot" aria-label="{{ t.ad }}">{{ t.ad }}</div>
+{{ ad(ads[1]) }}
 </main>
 <footer>
   <p>{{ t.disclaimer }}</p>

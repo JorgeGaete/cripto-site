@@ -25,6 +25,9 @@ CACHE, OUT = ROOT / "cache", ROOT / "site"
 SITE_URL = "https://jorgegaete.github.io"
 PREFIX = "/cripto-site"
 BASE_URL = SITE_URL + PREFIX
+# Publicidad A-Ads: IDs de los bloques creados en a-ads.com (vacío = se muestra el espacio de reserva)
+AADS_TOP = ""
+AADS_BOTTOM = ""  # si queda vacío se usa AADS_TOP
 BINANCE = "https://data-api.binance.vision/api/v3/klines"
 MONTHS = {"es": ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"],
           "en": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]}
@@ -187,7 +190,7 @@ def main():
     pages = []
     for lang, t in T.items():
         other = "en" if lang == "es" else "es"
-        ctx = dict(P=PREFIX, t=t, lang=lang, other=other, asof=fdate(asof, lang), year=asof[:4],
+        ctx = dict(P=PREFIX, ads=(AADS_TOP, AADS_BOTTOM or AADS_TOP), t=t, lang=lang, other=other, asof=fdate(asof, lang), year=asof[:4],
                    fnum=lambda x, d=None: fnum(x, lang, d), fpct=lambda x, s=True: fpct(x, lang, s),
                    fbig=lambda x: fbig(x, lang), ordinal=lambda n: ordinal(n, lang), fdate=lambda s: fdate(s, lang), coins=list(data.values()))
 
