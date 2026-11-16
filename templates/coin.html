@@ -74,7 +74,7 @@
   <details><summary>{{ t.what_ma }}</summary><p>{{ t.what_ma_txt }}</p></details>
 </section>
 
-<nav class="others" aria-label="{{ t.all_coins }}">{% for c in coins if c.sym != x.sym %}<a href="/{{ lang }}/{{ c.slug }}/">{{ c.name }}</a>{% endfor %}</nav>
+<nav class="others" aria-label="{{ t.all_coins }}">{% for c in coins if c.sym != x.sym %}<a href="{{ P }}/{{ lang }}/{{ c.slug }}/">{{ c.name }}</a>{% endfor %}</nav>
 
 <script>
 (() => {

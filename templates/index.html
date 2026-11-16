@@ -10,7 +10,7 @@
 <tbody>
 {% for x in coins %}
 <tr>
-<td><a href="/{{ lang }}/{{ x.slug }}/"><b>{{ x.name }}</b> <span class="muted">{{ x.sym }}</span></a></td>
+<td><a href="{{ P }}/{{ lang }}/{{ x.slug }}/"><b>{{ x.name }}</b> <span class="muted">{{ x.sym }}</span></a></td>
 <td class="n">${{ fnum(x.price) }}</td>
 <td class="n"><span class="dir {{ 'good' if x.ch24 > 0 else 'bad' }}">{{ '▲' if x.ch24 > 0 else '▼' }}</span> {{ fpct(x.ch24) }}%</td>
 <td class="n"><span class="dir {{ 'good' if x.ch7 > 0 else 'bad' }}">{{ '▲' if x.ch7 > 0 else '▼' }}</span> {{ fpct(x.ch7) }}%</td>

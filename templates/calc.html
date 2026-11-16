@@ -20,7 +20,7 @@
 <script>
 const LANG = "{{ lang }}", cache = {};
 const nf = (x, d) => x.toLocaleString(LANG === "es" ? "es-CL" : "en-US", {maximumFractionDigits: d, minimumFractionDigits: d});
-async function load(f) { return cache[f] ??= (await fetch("/data/" + f + ".json")).json(); }
+async function load(f) { return cache[f] ??= (await fetch("{{ P }}/data/" + f + ".json")).json(); }
 function at(dates, vals, day) {           // último valor con fecha <= day
   let lo = 0, hi = dates.length - 1, r = -1;
   while (lo <= hi) { const m = (lo + hi) >> 1; if (dates[m] <= day) { r = m; lo = m + 1; } else hi = m - 1; }

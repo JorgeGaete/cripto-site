@@ -21,7 +21,10 @@ from i18n import T
 
 ROOT = Path(__file__).resolve().parent
 CACHE, OUT = ROOT / "cache", ROOT / "site"
-BASE_URL = "https://example.com"          # cambiar al dominio real
+# Dónde vive el sitio. Con dominio propio: SITE_URL = "https://midominio.com", PREFIX = ""
+SITE_URL = "https://jorgegaete.github.io"
+PREFIX = "/cripto-site"
+BASE_URL = SITE_URL + PREFIX
 BINANCE = "https://data-api.binance.vision/api/v3/klines"
 MONTHS = {"es": ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"],
           "en": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]}
@@ -184,7 +187,7 @@ def main():
     pages = []
     for lang, t in T.items():
         other = "en" if lang == "es" else "es"
-        ctx = dict(t=t, lang=lang, other=other, asof=fdate(asof, lang), year=asof[:4],
+        ctx = dict(P=PREFIX, t=t, lang=lang, other=other, asof=fdate(asof, lang), year=asof[:4],
                    fnum=lambda x, d=None: fnum(x, lang, d), fpct=lambda x, s=True: fpct(x, lang, s),
                    fbig=lambda x: fbig(x, lang), ordinal=lambda n: ordinal(n, lang), fdate=lambda s: fdate(s, lang), coins=list(data.values()))
 
@@ -203,7 +206,7 @@ def main():
             render("coin.html", f"{x['slug']}/index.html", x=x, fill=fill, chart=svg_chart(x["chart"], lang) + svg_chart(x["chart"], lang, True),
                    title=t["coin_title"].format(**fill), desc=t["coin_desc"].format(**fill))
     # raíz: redirige según idioma del navegador
-    (OUT / "index.html").write_text(env.get_template("root.html").render())
+    (OUT / "index.html").write_text(env.get_template("root.html").render(P=PREFIX))
     (OUT / "robots.txt").write_text(f"User-agent: *\nAllow: /\nSitemap: {BASE_URL}/sitemap.xml\n")
     (OUT / "sitemap.xml").write_text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
                                      + "".join(f"<url><loc>{BASE_URL}/{p.replace('index.html', '')}</loc><lastmod>{asof}</lastmod></url>"
