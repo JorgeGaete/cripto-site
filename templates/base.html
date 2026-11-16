@@ -28,7 +28,7 @@
 <main>
 {{ ad(ads[0]) }}
 {% block content %}{% endblock %}
-{{ ad(ads[1]) }}
+{% if ads[1] or not ads[0] %}{{ ad(ads[1]) }}{% endif %}
 </main>
 <footer>
   <p>{{ t.disclaimer }}</p>
