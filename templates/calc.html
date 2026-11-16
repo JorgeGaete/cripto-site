@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% set title = t.calc_title %}{% set desc = t.calc_desc %}
+{% block content %}
+<h1>{{ t.calc_h1 }}</h1>
+<form id="calc" class="calc">
+  <label>{{ t.calc_coin }}<select name="coin">{% for c in coins %}<option value="{{ c.sym }}">{{ c.name }} ({{ c.sym }})</option>{% endfor %}</select></label>
+  <label>{{ t.calc_amount }}<input name="amount" type="number" min="1" step="any" value="{{ 100 if lang == 'en' else 100000 }}"></label>
+  <label>{{ t.calc_currency }}<select name="cur"><option value="USD" {{ 'selected' if lang == 'en' }}>USD</option><option value="CLP" {{ 'selected' if lang == 'es' }}>CLP</option></select></label>
+  <label>{{ t.calc_date }}<input name="date" type="date" value="2021-01-01" min="2017-08-17"></label>
+  <label>{{ t.calc_mode }}<select name="mode"><option value="once">{{ t.calc_once }}</option><option value="dca">{{ t.calc_dca }}</option></select></label>
+  <button type="submit">{{ t.calc_btn }}</button>
+</form>
+<div id="out" class="cards" hidden>
+  <article class="card"><h2>{{ t.calc_invested }}</h2><p id="o-inv"></p></article>
+  <article class="card"><h2>{{ t.calc_value }}</h2><p id="o-val"></p></article>
+  <article class="card"><h2>{{ t.calc_return }}</h2><p id="o-ret"></p></article>
+  <article class="card"><h2>{{ t.calc_units }}</h2><p id="o-units"></p></article>
+</div>
+<p class="muted small">{{ t.calc_note }}</p>
+<script>
+const LANG = "{{ lang }}", cache = {};
+const nf = (x, d) => x.toLocaleString(LANG === "es" ? "es-CL" : "en-US", {maximumFractionDigits: d, minimumFractionDigits: d});
+async function load(f) { return cache[f] ??= (await fetch("/data/" + f + ".json")).json(); }
+function at(dates, vals, day) {           // último valor con fecha <= day
+  let lo = 0, hi = dates.length - 1, r = -1;
+  while (lo <= hi) { const m = (lo + hi) >> 1; if (dates[m] <= day) { r = m; lo = m + 1; } else hi = m - 1; }
+  return r < 0 ? null : vals[r];
+}
+document.getElementById("calc").addEventListener("submit", async e => {
+  e.preventDefault();
+  const f = new FormData(e.target), sym = f.get("coin"), cur = f.get("cur"), amt = +f.get("amount");
+  const px = await load(sym), fxRaw = cur === "CLP" ? await load("usdclp") : null;
+  const fxD = fxRaw ? Object.keys(fxRaw) : null, fxV = fxRaw ? Object.values(fxRaw) : null;
+  let start = f.get("date"); if (start < px.d[0]) start = px.d[0];
+  const days = f.get("mode") === "dca" ? [] : [start];
+  if (!days.length) { let [y, m, d] = start.split("-").map(Number);
+    while (true) { const s = `${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`; if (s > px.d.at(-1)) break; days.push(s); m++; if (m > 12) { m = 1; y++; } } }
+  let units = 0, inv = 0;
+  for (const day of days) {
+    const p = at(px.d, px.c, day), fx = fxRaw ? at(fxD, fxV, day) : 1;
+    if (!p || !fx) continue;
+    units += amt / fx / p; inv += amt;
+  }
+  const fxNow = fxRaw ? fxV.at(-1) : 1, val = units * px.c.at(-1) * fxNow, sign = cur === "CLP" ? "$" : "US$";
+  const dec = cur === "CLP" ? 0 : 2;
+  document.getElementById("o-inv").textContent = `${sign}${nf(inv, dec)} (${days.length} × ${sign}${nf(amt, dec)})`;
+  document.getElementById("o-val").textContent = `${sign}${nf(val, dec)}`;
+  const r = (val / inv - 1) * 100, el = document.getElementById("o-ret");
+  el.textContent = `${r > 0 ? "+" : ""}${nf(r, 1)}%  (${sign}${nf(val - inv, dec)})`; el.className = r >= 0 ? "up" : "down";
+  document.getElementById("o-units").textContent = `${nf(units, units < 1 ? 6 : 2)} ${sym}`;
+  document.getElementById("out").hidden = false;
+});
+document.getElementById("calc").requestSubmit();   // muestra un ejemplo al cargar
+</script>
+{% endblock %}

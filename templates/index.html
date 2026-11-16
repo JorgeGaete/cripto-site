@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% set title = t.home_title %}{% set desc = t.home_desc %}
+{% block content %}
+<h1>{{ t.home_title }}</h1>
+<p class="lede">{{ t.tagline }}. {{ t.updated }} {{ asof }}.</p>
+<div class="table-wrap">
+<table class="coins">
+<thead><tr><th>{{ t.coin }}</th><th class="n">{{ t.price }}</th><th class="n">{{ t.ch24 }}</th><th class="n">{{ t.ch7 }}</th>
+<th class="n">{{ t.ch30 }}</th><th>{{ t.mom }}</th><th class="n">{{ t.vs_ma200 }}</th><th class="n">{{ t.from_ath }}</th><th class="n">{{ t.pct1y }}</th></tr></thead>
+<tbody>
+{% for x in coins %}
+<tr>
+<td><a href="/{{ lang }}/{{ x.slug }}/"><b>{{ x.name }}</b> <span class="muted">{{ x.sym }}</span></a></td>
+<td class="n">${{ fnum(x.price) }}</td>
+<td class="n {{ 'up' if x.ch24 > 0 else 'down' }}">{{ fpct(x.ch24) }}%</td>
+<td class="n {{ 'up' if x.ch7 > 0 else 'down' }}">{{ fpct(x.ch7) }}%</td>
+<td class="n {{ 'up' if x.ch30 > 0 else 'down' }}">{{ fpct(x.ch30) }}%</td>
+<td><span class="pill {{ 'up' if x.mom_pos else 'down' }}">{{ t.positive if x.mom_pos else t.negative }}</span></td>
+<td class="n {{ 'up' if x.vs_ma200 > 0 else 'down' }}">{{ fpct(x.vs_ma200) }}%</td>
+<td class="n">{{ fpct(x.dd) }}%</td>
+<td class="n">{{ x.pct1y }}</td>
+</tr>
+{% endfor %}
+</tbody></table></div>
+<section class="explain">
+<h2>{{ t.what_mom }}</h2><p>{{ t.what_mom_txt }}</p>
+<h2>{{ t.what_ma }}</h2><p>{{ t.what_ma_txt }}</p>
+</section>
+{% endblock %}

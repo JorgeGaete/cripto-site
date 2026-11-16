@@ -1,0 +1,32 @@
+{%- set alt = path.replace('calculadora/', 'calculator/') if lang == 'es' else path.replace('calculator/', 'calculadora/') -%}
+<!doctype html>
+<html lang="{{ lang }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ title }}</title>
+<meta name="description" content="{{ desc }}">
+<link rel="alternate" hreflang="{{ lang }}" href="/{{ lang }}/{{ path.replace('index.html','') }}">
+<link rel="alternate" hreflang="{{ other }}" href="/{{ other }}/{{ alt.replace('index.html','') }}">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/{{ lang }}/">{{ t.site }}</a>
+  <nav>
+    <a href="/{{ lang }}/">{{ t.all_coins }}</a>
+    <a href="/{{ lang }}/{{ 'calculadora' if lang == 'es' else 'calculator' }}/">{{ t.calc_link }}</a>
+    <a class="lang" href="/{{ other }}/{{ alt.replace('index.html','') }}">{{ t.other_lang }}</a>
+  </nav>
+</header>
+<main>
+<div class="ad-slot" aria-label="{{ t.ad }}">{{ t.ad }}</div>
+{% block content %}{% endblock %}
+<div class="ad-slot" aria-label="{{ t.ad }}">{{ t.ad }}</div>
+</main>
+<footer>
+  <p>{{ t.disclaimer }}</p>
+  <p class="muted">{{ t.updated }} {{ asof }} ({{ t.utc }}) · © {{ year }} {{ t.site }}</p>
+</footer>
+</body>
+</html>
