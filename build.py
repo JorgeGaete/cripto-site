@@ -40,6 +40,7 @@ def get(url, params=None, tries=4):
             r = requests.get(url, params=params, timeout=30); r.raise_for_status(); return r.json()
         except requests.RequestException:
             if i == tries - 1: raise
+            time.sleep(5 * (i + 1))
             time.sleep(3 * (i + 1))
 
 
@@ -69,9 +70,13 @@ def usdclp(offline=False):
     d = json.loads(f.read_text()) if f.exists() else {}
     if not offline:
         y0 = 2017 if not d else int(max(d)[:4])
-        for y in range(y0, date.today().year + 1):
-            for x in get(f"https://mindicador.cl/api/dolar/{y}")["serie"]:
-                d[x["fecha"][:10]] = x["valor"]
+        try:
+            for y in range(y0, date.today().year + 1):
+                for x in get(f"https://mindicador.cl/api/dolar/{y}")["serie"]:
+                    d[x["fecha"][:10]] = x["valor"]
+        except requests.RequestException as e:
+            if not d: raise
+            print(f"aviso: mindicador.cl falló ({type(e).__name__}); se usa el dólar guardado hasta {max(d)}")
         f.write_text(json.dumps(dict(sorted(d.items()))))
     return dict(sorted(d.items()))
 
