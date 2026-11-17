@@ -1,7 +1,7 @@
 name: construir y publicar sitio
 on:
   schedule:
-    - cron: "30 0 * * *"     # después del cierre diario (00:00 UTC)
+    - cron: "41 * * * *"   # cada hora: GitHub atrasa los cron varias horas
   workflow_dispatch:
 permissions:
   contents: write
